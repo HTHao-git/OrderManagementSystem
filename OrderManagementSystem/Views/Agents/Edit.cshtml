@@ -1,0 +1,30 @@
+﻿@model OrderManagementSystem.Models.Agent
+
+@{
+    ViewBag.Title = "Edit Agent";
+}
+
+<h2>Edit Agent</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.AgentID)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.AgentName)
+        @Html.TextBoxFor(m => m.AgentName, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.AgentName, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Address)
+        @Html.TextBoxFor(m => m.Address, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-primary" />
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-secondary" })
+    </div>
+}

@@ -1,0 +1,99 @@
+﻿@model OrderManagementSystem.Models.Order
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Order #@Model.OrderID - Print</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body { padding: 20px; }
+        @@media print {
+            .no-print { display: none; }
+            a[href]:after { content: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2>Order Invoice</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                <h4>Order Information</h4>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Order ID:</strong></td>
+                        <td>@Model.OrderID</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Order Date:</strong></td>
+                        <td>@Model.OrderDate.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-6">
+                <h4>Agent Information</h4>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Name:</strong></td>
+                        <td>@Model.Agent.AgentName</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Address:</strong></td>
+                        <td>@Model.Agent.Address</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <h4>Order Items</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Size</th>
+                            <th class="text-right">Quantity</th>
+                            <th class="text-right">Unit Price</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td>@item.Item.ItemName</td>
+                                <td>@item.Item.Size</td>
+                                <td class="text-right">@item.Quantity</td>
+                                <td class="text-right">@item.UnitAmount.ToString("C")</td>
+                                <td class="text-right">@((item.Quantity * item.UnitAmount).ToString("C"))</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="4" class="text-right"><strong>Grand Total:</strong></td>
+                            <td class="text-right"><strong>@Model.OrderDetails.Sum(od => od.Quantity * od.UnitAmount).ToString("C")</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-4 no-print">
+            <div class="col-12">
+                <button onclick="window.print()" class="btn btn-primary">Print</button>
+                @Html.ActionLink("Back", "Details", new { id = Model.OrderID }, new { @class = "btn btn-secondary" })
+            </div>
+        </div>
+    </div>
+</body>
+</html>

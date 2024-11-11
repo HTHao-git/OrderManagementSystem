@@ -1,0 +1,122 @@
+﻿@model OrderManagementSystem.ViewModels.OrderViewModel
+
+@{
+    ViewBag.Title = "Create Order";
+}
+
+<h2>Create Order</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label>Agent</label>
+        @Html.DropDownList("AgentID", null, "Select Agent", new { @class = "form-control", required = "required" })
+    </div>
+
+    <h4>Order Items</h4>
+    <div id="orderItems">
+        <div class="order-item row mb-3">
+            <div class="col-md-3">
+                <label>Item</label>
+                <select name="OrderDetails[0].ItemID" class="form-control item-select" required>
+                    <option value="">Select Item</option>
+                    @foreach (var item in ViewBag.Items)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label>Quantity</label>
+                <input type="number" name="OrderDetails[0].Quantity" class="form-control quantity" min="1" value="1" required />
+            </div>
+            <div class="col-md-2">
+                <label>Unit Price</label>
+                <input type="text" name="OrderDetails[0].UnitAmount" class="form-control unit-price" readonly />
+            </div>
+            <div class="col-md-2">
+                <label>Total</label>
+                <input type="text" class="form-control total" readonly />
+            </div>
+            <div class="col-md-2">
+                <label>&nbsp;</label>
+                <button type="button" class="btn btn-danger remove-item">Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <button type="button" id="addItem" class="btn btn-secondary">Add Another Item</button>
+        <button type="submit" class="btn btn-primary">Create Order</button>
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-secondary" })
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let itemCount = 0;
+
+            // Update price for an item
+            function updatePrice(row) {
+                const itemId = row.find('.item-select').val();
+                if (!itemId) return;
+
+                $.get('/Orders/GetItemPrice', { itemId: itemId })
+                    .done(function (data) {
+                        if (data && data.price) {
+                            const price = parseFloat(data.price);
+                            row.find('.unit-price').val(price.toFixed(2));
+                            updateTotal(row);
+                        }
+                    })
+                    .fail(function () {
+                        alert('Error fetching item price');
+                    });
+            }
+
+            // Calculate total for a row
+            function updateTotal(row) {
+                const quantity = parseInt(row.find('.quantity').val()) || 0;
+                const price = parseFloat(row.find('.unit-price').val()) || 0;
+                const total = quantity * price;
+                row.find('.total').val(total.toFixed(2));
+            }
+
+            // Handle item selection change
+            $(document).on('change', '.item-select', function () {
+                const row = $(this).closest('.order-item');
+                updatePrice(row);
+            });
+
+            // Handle quantity change
+            $(document).on('change', '.quantity', function () {
+                const row = $(this).closest('.order-item');
+                updateTotal(row);
+            });
+
+            // Add new item row
+            $('#addItem').click(function () {
+                itemCount++;
+                const newRow = $('.order-item:first').clone();
+
+                // Update field names
+                newRow.find('.item-select').attr('name', `OrderDetails[${itemCount}].ItemID`).val('');
+                newRow.find('.quantity').attr('name', `OrderDetails[${itemCount}].Quantity`).val(1);
+                newRow.find('.unit-price').attr('name', `OrderDetails[${itemCount}].UnitAmount`).val('');
+                newRow.find('.total').val('');
+
+                $('#orderItems').append(newRow);
+            });
+
+            // Remove item row
+            $(document).on('click', '.remove-item', function () {
+                if ($('.order-item').length > 1) {
+                    $(this).closest('.order-item').remove();
+                }
+            });
+        });
+    </script>
+}
